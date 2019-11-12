@@ -11,20 +11,37 @@ int main(int argc, char *argv[]) {
     if(argc == 2 && (std::string)argv[1]=="--help")
         DisplayHelpInformations();
     
-    CImg<unsigned char> loadedPicture(argv[1]);
-    //std::string command = (std::string)argv[2];
-    std::string fileName = ExtractFilenameFromPath((std::string)argv[1]);
+    cimg::exception_mode(0); 
+    try{
+        CImg<unsigned char> loadedPicture(argv[1]);
+        std::string command;
 
-    Photo myPicture(loadedPicture.width(), loadedPicture.height(), loadedPicture.spectrum(), fileName);
-    CopyCImgToPhotoObject(loadedPicture,myPicture);
+        if(argv[2]){
+            command = (std::string)argv[2];
+        }else{
+            std::cout<<"Command not given";
+            exit(0);
+        }
+        
+        // create Photo object and convert Cimg into it 
+        std::string fileName = ExtractFilenameFromPath((std::string)argv[1]);
+        Photo myPicture(loadedPicture.width(), loadedPicture.height(), loadedPicture.spectrum(), fileName);
+        CopyCImgToPhotoObject(loadedPicture,myPicture);
 
-    CImg<unsigned char> img(myPicture.GetWidth(), myPicture.GetHeight(), 1, myPicture.GetChannelAmount());
-    CopyPhotoObjectToCImg(img, myPicture);
-    
-    DisplayImage(img);
+        // parsing command
+        ParseCommandAndRun(command, argc, argv, myPicture);        
 
-    std::string savePath = "./output/" + myPicture.GetFilename();
-    img.save(savePath.c_str());
-    
+        // convert Photo object to Cimg, dispaly and save
+        CImg<unsigned char> img(myPicture.GetWidth(), myPicture.GetHeight(), 1, myPicture.GetChannelAmount());
+        CopyPhotoObjectToCImg(myPicture,img);
+        DisplayImage(img);
+        std::string savePath = "./output/" + myPicture.GetFilename();
+        img.save(savePath.c_str());
+
+    }catch(CImgException& e){
+        std::cout << "Image does not exist.";
+        exit(0);
+    }
+
     return 1;
 }

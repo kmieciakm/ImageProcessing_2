@@ -6,7 +6,7 @@ void CopyCImgToPhotoObject(cimg_library::CImg<unsigned char> & CImgPicture, Phot
         Channel newChannel(photo.GetWidth(),photo.GetHeight());
         for(int x=0; x<photo.GetWidth(); x++){
             for(int y=0; y<photo.GetHeight(); y++){
-                int pixelValue = (int) CImgPicture(x,y,0,currentChannel);
+                int pixelValue = static_cast<int>(CImgPicture(x,y,0,currentChannel));
                 newChannel.SetValue(x,y,pixelValue);
             }
         }
@@ -14,7 +14,7 @@ void CopyCImgToPhotoObject(cimg_library::CImg<unsigned char> & CImgPicture, Phot
     }
 }
 
-void CopyPhotoObjectToCImg(cimg_library::CImg<unsigned char> & CImgPicture, Photo & photo){
+void CopyPhotoObjectToCImg(Photo & photo, cimg_library::CImg<unsigned char> & CImgPicture){
     unsigned char color[photo.GetWidth()][photo.GetHeight()][3];
 
     for(int currentChannelID = 0; currentChannelID < photo.GetChannelAmount(); currentChannelID++){
@@ -33,6 +33,18 @@ void CopyPhotoObjectToCImg(cimg_library::CImg<unsigned char> & CImgPicture, Phot
 
 void DisplayImage(cimg_library::CImg<unsigned char> & imageToDisplay){
     cimg_library::CImgDisplay displayWindow(imageToDisplay);
+    while (!displayWindow.is_closed()) {
+        displayWindow.wait();
+    }
+}
+
+void DisplayHistogram(std::vector<float> hist){
+    cimg_library::CImg<unsigned char> histogramImage(255, 255, 1, 1);
+    unsigned char grayColor[3] = {128, 128, 128};
+    for(int x = 0; x < 255; x++){
+        histogramImage.draw_line(x, 255 - static_cast<int>(hist[x]*255*20), x, 255, grayColor);
+    }
+    cimg_library::CImgDisplay displayWindow(histogramImage);
     while (!displayWindow.is_closed()) {
         displayWindow.wait();
     }

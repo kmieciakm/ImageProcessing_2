@@ -7,5 +7,6 @@
 bool isIntNumber(std::string);
 std::string ExtractFilenameFromPath(std::string);
 void DisplayHelpInformations();
+void ParseCommandAndRun(std::string, int, char *[], Photo &);
 
 #endif

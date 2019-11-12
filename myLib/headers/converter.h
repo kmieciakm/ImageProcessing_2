@@ -5,7 +5,8 @@
 #include "proc.h"
 
 void CopyCImgToPhotoObject(cimg_library::CImg<unsigned char> &, Photo &);
-void CopyPhotoObjectToCImg(cimg_library::CImg<unsigned char> &,Photo &);
+void CopyPhotoObjectToCImg(Photo &, cimg_library::CImg<unsigned char> &);
 void DisplayImage(cimg_library::CImg<unsigned char> &);
+void DisplayHistogram(std::vector<float>);
 
 #endif

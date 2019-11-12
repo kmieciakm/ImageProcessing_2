@@ -35,3 +35,22 @@ std::string ExtractFilenameFromPath(std::string path){
     }
     return filename;
 }
+
+void ParseCommandAndRun(std::string command, int argumentsAmount, char *arguments[], Photo & photo){
+    if(command == "--histogram"){
+        if(argumentsAmount != 4){
+            std::cout << "Unexpected or missing argument";
+            exit(0);
+        }else{
+            if( !isIntNumber((std::string)arguments[3]) || std::stoi(std::string(arguments[3])) >= photo.GetChannelAmount() ){
+                std::cout << "Wrong argument value type";
+                exit(0);
+            }else{
+                DisplayHistogram(photo.GetChannel( std::stoi(std::string(arguments[3])) ).GetHistogram());
+            }
+        }
+    }else{
+        std::cout << "Illigal command: " << command;
+        exit(0);
+    }
+}
