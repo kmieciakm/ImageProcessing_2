@@ -65,6 +65,14 @@ void ParseCommandAndRun(std::string command, int argumentsAmount, char *argument
                     PowerProbabilityDensity(photo.GetChannel(channelIndex), std::stoi(std::string(arguments[3])), std::stoi(std::string(arguments[4])) );
             }
         }
+    }else if(command == "--centropy"){
+        if(argumentsAmount != 3){
+            std::cout << "Unexpected or missing argument";
+            exit(0);
+        }else{
+            for(int channelIndex = 0; channelIndex < photo.GetChannelAmount(); channelIndex++)
+                std::cout << GetChannelEntropy(photo.GetChannel(channelIndex)) << std::endl;
+        }
     }else{
         std::cout << "Illigal command: " << command;
         exit(0);

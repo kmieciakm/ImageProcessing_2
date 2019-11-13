@@ -18,3 +18,18 @@ void PowerProbabilityDensity(Channel &channel, int gMin, int gMax){
         }
     }
 }
+
+float GetChannelEntropy(Channel &channel){
+    float entropyValue = 0;
+    float temp = 0;
+    std::vector<float> histogram = channel.GetHistogram();
+
+    for(int i = 0; i < histogram.size(); i++){  
+        if(histogram[i] > 0)
+            temp = histogram[i] * log2f(static_cast<float>(histogram[i]));
+        else
+            temp = 0;
+        entropyValue += temp;
+    }
+    return (-1 * entropyValue);
+}

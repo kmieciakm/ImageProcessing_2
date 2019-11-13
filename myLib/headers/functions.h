@@ -4,5 +4,6 @@
 #include "./proc.h"
 
 void PowerProbabilityDensity(Channel &,int,int);
+float GetChannelEntropy(Channel &);
 
 #endif
