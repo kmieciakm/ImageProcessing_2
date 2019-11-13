@@ -39,7 +39,7 @@ void DisplayImage(cimg_library::CImg<unsigned char> & imageToDisplay){
 }
 
 void DisplayHistogram(std::vector<float> hist){
-    cimg_library::CImg<unsigned char> histogramImage(255, 255, 1, 1);
+    cimg_library::CImg<unsigned char> histogramImage(255, 255, 1, 1, 0);
     unsigned char grayColor[3] = {128, 128, 128};
     for(int x = 0; x < 255; x++){
         histogramImage.draw_line(x, 255 - static_cast<int>(hist[x]*255*20), x, 255, grayColor);
@@ -48,4 +48,5 @@ void DisplayHistogram(std::vector<float> hist){
     while (!displayWindow.is_closed()) {
         displayWindow.wait();
     }
+    histogramImage.save("output/histogram.bmp");
 }

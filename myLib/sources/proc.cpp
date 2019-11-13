@@ -26,6 +26,14 @@ int Channel::GetValue(int _x, int _y){
     return this->fill[_x][_y];
 }
 
+int Channel::GetWidth(){
+    return this->width;
+}
+
+int Channel::GetHeight(){
+    return this->height;
+}
+
 void Channel::CalculateHistogram(){
     this->histogram.resize(255);
     for(int x = 0; x < this->width; x++){
@@ -81,6 +89,6 @@ void Photo::SetChannel(int _channelId, Channel _channel){
     this->channels[_channelId] = _channel;
 }
 
-Channel Photo::GetChannel(int _channelIndex){
+Channel& Photo::GetChannel(int _channelIndex){
     return this->channels[_channelIndex];
 }

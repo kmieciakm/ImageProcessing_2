@@ -1,6 +1,7 @@
 #include <iostream>
 #include "../headers/proc.h"
 #include "../headers/converter.h"
+#include "../headers/functions.h"
 #include "../../CImg/CImg.h"
 
 bool isIntNumber(std::string str){
@@ -47,6 +48,21 @@ void ParseCommandAndRun(std::string command, int argumentsAmount, char *argument
                 exit(0);
             }else{
                 DisplayHistogram(photo.GetChannel( std::stoi(std::string(arguments[3])) ).GetHistogram());
+            }
+        }
+    }else if(command == "--hpower"){
+        if(argumentsAmount != 5){
+            std::cout << "Unexpected or missing argument";
+            exit(0);
+        }else{
+            if( !isIntNumber((std::string)arguments[3]) || !isIntNumber((std::string)arguments[4]) 
+                    || std::stoi(std::string(arguments[3])) < 0 || std::stoi(std::string(arguments[3])) > 255
+                    || std::stoi(std::string(arguments[4])) < 0 || std::stoi(std::string(arguments[4])) > 255){
+                std::cout << "Wrong argument value type";
+                exit(0);
+            }else{
+                for(int channelIndex = 0; channelIndex < photo.GetChannelAmount(); channelIndex++)
+                    PowerProbabilityDensity(photo.GetChannel(channelIndex), std::stoi(std::string(arguments[3])), std::stoi(std::string(arguments[4])) );
             }
         }
     }else{

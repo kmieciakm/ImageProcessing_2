@@ -15,6 +15,8 @@ private:
 public:
     void SetValue(int _x, int _y, int _value); 
     int GetValue(int _x, int _y);
+    int GetWidth();
+    int GetHeight();
     std::vector<float> GetHistogram();
     Channel(int _width, int _height);
     Channel();
@@ -34,7 +36,7 @@ public:
     int GetChannelAmount();
     std::string GetFilename();
     void SetChannel(int,Channel);
-    Channel GetChannel(int);
+    Channel& GetChannel(int);
     Photo(int,int,int,std::string);
     Photo();
 };

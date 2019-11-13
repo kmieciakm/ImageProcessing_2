@@ -1,1 +1,1 @@
-g++ -o task2.exe main.cpp myLib/sources/converter.cpp myLib/sources/proc.cpp myLib/sources/parser.cpp -O2 -lgdi32
+g++ -o task2.exe main.cpp myLib/sources/converter.cpp myLib/sources/proc.cpp myLib/sources/parser.cpp myLib/sources/functions.cpp -O2 -lgdi32
