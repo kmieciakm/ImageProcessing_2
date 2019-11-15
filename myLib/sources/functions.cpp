@@ -3,6 +3,21 @@
 #include <math.h>
 #include <algorithm>
 
+float GetChannelEntropy(Channel &channel){
+    float entropyValue = 0;
+    float temp = 0;
+    std::vector<float> histogram = channel.GetHistogram();
+
+    for(int i = 0; i < histogram.size(); i++){  
+        if(histogram[i] > 0)
+            temp = histogram[i] * log2f(static_cast<float>(histogram[i]));
+        else
+            temp = 0;
+        entropyValue += temp;
+    }
+    return (-1 * entropyValue);
+}
+
 void ApplyPowerProbabilityDensity(Channel &channel, int gMin, int gMax){
     std::vector<float> histogram = channel.GetHistogram();
     float gMinPow = powf(static_cast<float>(gMin),(1./3.));
@@ -20,107 +35,61 @@ void ApplyPowerProbabilityDensity(Channel &channel, int gMin, int gMax){
     }
 }
 
-float GetChannelEntropy(Channel &channel){
-    float entropyValue = 0;
-    float temp = 0;
-    std::vector<float> histogram = channel.GetHistogram();
-
-    for(int i = 0; i < histogram.size(); i++){  
-        if(histogram[i] > 0)
-            temp = histogram[i] * log2f(static_cast<float>(histogram[i]));
-        else
-            temp = 0;
-        entropyValue += temp;
-    }
-    return (-1 * entropyValue);
-}
-
 void ApplyKirschOperator(Channel &channel){
     Channel channelCopy = channel;
+
     for(int x = 1; x < channel.GetWidth()-1; x++){
         for(int y = 1; y < channel.GetHeight()-1; y++){   
-            std::vector<float> pixelsValue; 
-            for(int i = 0; i < 8; i++){
-                float tempS = ComputeS(i,x,y,channelCopy);
-                float tempT = ComputeT(i,x,y,channelCopy);
+            std::vector<int> neighborhoodA;
+            neighborhoodA.push_back(channelCopy.GetValue(x-1,y-1));
+            neighborhoodA.push_back(channelCopy.GetValue(x,y-1));
+            neighborhoodA.push_back(channelCopy.GetValue(x+1,y-1));
+            neighborhoodA.push_back(channelCopy.GetValue(x+1,y));
+            neighborhoodA.push_back(channelCopy.GetValue(x+1,y+1));
+            neighborhoodA.push_back(channelCopy.GetValue(x,y+1));
+            neighborhoodA.push_back(channelCopy.GetValue(x-1,y+1));
+            neighborhoodA.push_back(channelCopy.GetValue(x-1,y));
+
+            std::vector<float> pixelsValue;
+            for(int i = 0; i < neighborhoodA.size(); i++){
+                float tempS = ( neighborhoodA[i%8] + neighborhoodA[(i+1)%8] + neighborhoodA[(i+2)%8] );
+                float tempT = ( neighborhoodA[(i+3)%8] + neighborhoodA[(i+4)%8] + neighborhoodA[(i+5)%8] + neighborhoodA[(i+6)%8] + neighborhoodA[(i+7)%8] );
                 pixelsValue.push_back( abs((5*tempS) - (3*tempT)) );
             }
             pixelsValue.push_back(1);
+
             float maxPixelValue = *max_element(begin(pixelsValue), end(pixelsValue));
             channel.SetValue(x,y,maxPixelValue);
         }
     }
 }
 
-int ComputeS(int i, int x, int y, Channel &channel){
-    std::vector<int> neighborhoodA;
-    neighborhoodA.push_back(channel.GetValue(x-1,y-1));
-    neighborhoodA.push_back(channel.GetValue(x,y-1));
-    neighborhoodA.push_back(channel.GetValue(x+1,y-1));
-    neighborhoodA.push_back(channel.GetValue(x+1,y));
-    neighborhoodA.push_back(channel.GetValue(x+1,y+1));
-    neighborhoodA.push_back(channel.GetValue(x,y+1));
-    neighborhoodA.push_back(channel.GetValue(x-1,y+1));
-    neighborhoodA.push_back(channel.GetValue(x-1,y));
-    
-    return ( neighborhoodA[i%8] + neighborhoodA[(i+1)%8] + neighborhoodA[(i+2)%8] );
-};
-
-int ComputeT(int i, int x, int y, Channel &channel){
-    std::vector<int> neighborhoodA;
-    neighborhoodA.push_back(channel.GetValue(x-1,y-1));
-    neighborhoodA.push_back(channel.GetValue(x,y-1));
-    neighborhoodA.push_back(channel.GetValue(x+1,y-1));
-    neighborhoodA.push_back(channel.GetValue(x+1,y));
-    neighborhoodA.push_back(channel.GetValue(x+1,y+1));
-    neighborhoodA.push_back(channel.GetValue(x,y+1));
-    neighborhoodA.push_back(channel.GetValue(x-1,y+1));
-    neighborhoodA.push_back(channel.GetValue(x-1,y));
-
-    return ( neighborhoodA[(i+3)%8] + neighborhoodA[(i+4)%8] + neighborhoodA[(i+5)%8] + neighborhoodA[(i+6)%8] + neighborhoodA[(i+7)%8] );
-};
-
 void ApplyConvolution(Channel &channel, std::string version){
     Channel channelCopy = channel;
+    std::vector<int> mask;
+    if(version == "N")
+        mask.insert(mask.end(),{ 1, 1, 1, 1,-2, 1, -1,-1,-1});
+    else if(version == "NE")
+        mask.insert(mask.end(),{ 1, 1, 1, -1,-2, 1, -1,-1, 1});
+    else if(version == "E")
+        mask.insert(mask.end(),{ -1, 1, 1, -1,-2, 1, -1, 1, 1});
+    else if(version == "SE")
+        mask.insert(mask.end(),{-1,-1, 1, -1,-2, 1, 1, 1, 1});
+    else
+        mask.insert(mask.end(),{ 0, 0, 0, 0, 1, 0, 0, 0, 0});
+
     for(int x = 1; x < channel.GetWidth()-1; x++){
         for(int y = 1; y < channel.GetHeight()-1; y++){
-            int newPixelValue = ComputeExtractionDetail(version,x,y,channelCopy);   
-            channel.SetValue(x,y,newPixelValue);
+            int sum = 0;
+            int currentPixel = 0;
+            for(int i = -1; i <= 1; i++){
+                for(int j = -1; j <= 1; j++, currentPixel++){
+                    sum += channelCopy.GetValue(x+j, y+i) * mask[currentPixel];
+                }
+            }
+            channel.SetValue(x,y,sum);
         }
     }
-}
-
-int ComputeExtractionDetail(std::string version, int x, int y, Channel &channel){
-    std::vector<int> mask;
-    int sum = 0;
-    if(version == "N"){
-        mask.insert(mask.end(),{ 1, 1, 1,
-                                 1,-2, 1,
-                                -1,-1,-1});
-    } else if(version == "NE"){
-        mask.insert(mask.end(),{ 1, 1, 1,
-                                -1,-2, 1,
-                                -1,-1, 1});
-    } else if(version == "E"){
-        mask.insert(mask.end(),{ -1, 1, 1,
-                                 -1,-2, 1,
-                                 -1, 1, 1});
-    } else if(version == "SE"){
-        mask.insert(mask.end(),{-1,-1, 1,
-                                -1,-2, 1,
-                                 1, 1, 1});
-    } else{
-        mask.insert(mask.end(),{ 0, 0, 0,
-                                 0, 1, 0,
-                                 0, 0, 0});
-    }
-    int currentPixel = 0;
-    for(int i = -1; i <= 1; i++){
-        for(int j = -1; j <= 1; j++, currentPixel++){
-            sum += channel.GetValue(x+j, y+i) * mask[currentPixel];
-        }
-    }
-    return sum;
 }
 
 void ApplyOptimalizedConvolution(Channel &channel, std::string version){    
@@ -130,7 +99,6 @@ void ApplyOptimalizedConvolution(Channel &channel, std::string version){
 
 void ApplyOptimalizedN(Channel &channel){
     Channel channelCopy = channel;
-    
     for(int x = 1; x < channel.GetWidth()-1; x++){
         for(int y = 1; y < channel.GetHeight()-1; y++){
             int sum = 0;
