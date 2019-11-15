@@ -6,7 +6,6 @@
 #include "../headers/functions.h"
 #include "../../CImg/CImg.h"
 
-
 bool isIntNumber(std::string str){
     for (int i=0 ; i < str.length(); i++){
         if(str[0] == '-')
@@ -18,10 +17,17 @@ bool isIntNumber(std::string str){
 }
 
 void DisplayHelpInformations(){
-    std::cout  << std::endl << "Usage" << std::endl;
+    std::cout << std::endl << "Usage" << std::endl;
     std::cout << "task2 -pathToImage --command [-argument=value [...]]" << std::endl << std::endl;
     std::cout << "Options" << std::endl << std::endl;
-    
+    std::cout 
+        << "--histogram <value> [<int>]        =  Diplay histogram of the given channel" << std::endl
+        << "--hpower <value> <value> [<float>] =  Power 2/3 final probability density function" << std::endl
+        << "--centropy                         =  Information source entropy" << std::endl
+        << "--sexdeti <value> [<string>]       =  Extraction of deteials I. N, NE, E, SE filters" << std::endl
+        << "--sexdetio <value> [<string>]      =  Optimalized --sexdeti" << std::endl
+        << "--ntest                            =  Execution time compare of --sexdeti and --sexdetio for value N" << std::endl
+        << "--okirsf                           =  Kirsh operator" << std::endl;
     exit(0);
 }
 
@@ -51,7 +57,8 @@ void ParseCommandAndRun(std::string command, int argumentsAmount, char *argument
                 std::cout << "Wrong argument value type";
                 exit(0);
             }else{
-                DisplayHistogram(photo.GetChannel( std::stoi(static_cast<std::string>(arguments[3])) ).GetHistogram());
+                int channelId = std::stoi(static_cast<std::string>(arguments[3]));
+                DisplayHistogram(photo.GetChannel(channelId).GetHistogram());
                 exit(0);
             }
         }
@@ -66,8 +73,10 @@ void ParseCommandAndRun(std::string command, int argumentsAmount, char *argument
                 std::cout << "Wrong argument value type";
                 exit(0);
             }else{
+                int leftBorder = std::stoi(static_cast<std::string>(arguments[3]));
+                int rightBorder = std::stoi(static_cast<std::string>(arguments[4]));
                 for(int channelIndex = 0; channelIndex < photo.GetChannelAmount(); channelIndex++)
-                    ApplyPowerProbabilityDensity(photo.GetChannel(channelIndex), std::stoi(static_cast<std::string>(arguments[3])), std::stoi(static_cast<std::string>(arguments[4])) );
+                    ApplyPowerProbabilityDensity(photo.GetChannel(channelIndex), leftBorder, rightBorder);
             }
         }
     }else if(command == "--centropy"){
@@ -99,8 +108,9 @@ void ParseCommandAndRun(std::string command, int argumentsAmount, char *argument
                 std::cout << "Wrong argument value type, available values: N, NE, E, SE";
                 exit(0);
             }else{
+                std::string maskVersion = static_cast<std::string>(arguments[3]);
                 for(int channelIndex = 0; channelIndex < photo.GetChannelAmount(); channelIndex++)
-                    ApplyConvolution(photo.GetChannel(channelIndex), static_cast<std::string>(arguments[3]));
+                    ApplyConvolution(photo.GetChannel(channelIndex), maskVersion);
             }
         }
     }else if(command == "--sexdetio"){
@@ -112,8 +122,9 @@ void ParseCommandAndRun(std::string command, int argumentsAmount, char *argument
                 std::cout << "Wrong argument value type, available values: N";
                 exit(0);
             }else{
+                std::string maskVersion = static_cast<std::string>(arguments[3]);
                 for(int channelIndex = 0; channelIndex < photo.GetChannelAmount(); channelIndex++)
-                    ApplyOptimalizedConvolution(photo.GetChannel(channelIndex), static_cast<std::string>(arguments[3]));
+                    ApplyOptimalizedConvolution(photo.GetChannel(channelIndex), maskVersion);
             }
         }
     }else if(command == "--ntest"){
@@ -131,7 +142,7 @@ void ParseCommandAndRun(std::string command, int argumentsAmount, char *argument
             std::cout << "Non optimalized execution time: " << elapsed_seconds1.count() << "s" << std::endl;
 
             auto start2 = std::chrono::system_clock::now();
-                ApplyOptimalizedConvolution(ch2,"N");
+                ApplyOptimalizedConvolution(ch1,"N");
             auto end2 = std::chrono::system_clock::now();
             std::chrono::duration<double> elapsed_seconds2 = end2-start2;
             std::cout << "Optimalized execution time:     " << elapsed_seconds2.count() << "s" << std::endl;
