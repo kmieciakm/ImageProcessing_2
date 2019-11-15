@@ -122,3 +122,29 @@ int ComputeExtractionDetail(std::string version, int x, int y, Channel &channel)
     }
     return sum;
 }
+
+void ApplyOptimalizedConvolution(Channel &channel, std::string version){    
+    if( version == "N" )
+        ApplyOptimalizedN(channel);
+}
+
+void ApplyOptimalizedN(Channel &channel){
+    Channel channelCopy = channel;
+    
+    for(int x = 1; x < channel.GetWidth()-1; x++){
+        for(int y = 1; y < channel.GetHeight()-1; y++){
+            int sum = 0;
+            for(int i = -1; i <= 1; i++){
+                for(int j = -1; j <= 1; j++){
+                    if( i == 1 )
+                        sum -= channelCopy.GetValue(x+j, y+i);
+                    else if ( i == 0 && j == 0 )
+                        sum += ( -2 * channelCopy.GetValue(x+j, y+i) );
+                    else
+                        sum += channelCopy.GetValue(x+j, y+i);
+                }
+            }
+            channel.SetValue(x,y,sum);
+        }
+    }
+}

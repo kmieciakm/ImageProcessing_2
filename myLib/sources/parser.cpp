@@ -1,8 +1,11 @@
 #include <iostream>
+#include <chrono>
+#include <stdlib.h>
 #include "../headers/proc.h"
 #include "../headers/converter.h"
 #include "../headers/functions.h"
 #include "../../CImg/CImg.h"
+
 
 bool isIntNumber(std::string str){
     for (int i=0 ; i < str.length(); i++){
@@ -99,6 +102,40 @@ void ParseCommandAndRun(std::string command, int argumentsAmount, char *argument
                 for(int channelIndex = 0; channelIndex < photo.GetChannelAmount(); channelIndex++)
                     ApplyConvolution(photo.GetChannel(channelIndex), static_cast<std::string>(arguments[3]));
             }
+        }
+    }else if(command == "--sexdetio"){
+        if(argumentsAmount != 4){
+            std::cout << "Unexpected or missing argument";
+            exit(0);
+        }else{
+            if( static_cast<std::string>(arguments[3]) != "N" ){
+                std::cout << "Wrong argument value type, available values: N";
+                exit(0);
+            }else{
+                for(int channelIndex = 0; channelIndex < photo.GetChannelAmount(); channelIndex++)
+                    ApplyOptimalizedConvolution(photo.GetChannel(channelIndex), static_cast<std::string>(arguments[3]));
+            }
+        }
+    }else if(command == "--ntest"){
+        if(argumentsAmount != 3){
+            std::cout << "Unexpected or missing argument";
+            exit(0);
+        }else{
+            Channel ch1 = photo.GetChannel(0);
+            Channel ch2 = photo.GetChannel(0);
+
+            auto start1 = std::chrono::system_clock::now();
+                ApplyConvolution(ch1,"N");
+            auto end1 = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds1 = end1-start1;
+            std::cout << "Non optimalized execution time: " << elapsed_seconds1.count() << "s" << std::endl;
+
+            auto start2 = std::chrono::system_clock::now();
+                ApplyOptimalizedConvolution(ch2,"N");
+            auto end2 = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds2 = end2-start2;
+            std::cout << "Optimalized execution time:     " << elapsed_seconds2.count() << "s" << std::endl;
+            exit(0);
         }
     }else{
         std::cout << "Illigal command: " << command;
