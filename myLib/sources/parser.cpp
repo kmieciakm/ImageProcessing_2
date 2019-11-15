@@ -43,11 +43,13 @@ void ParseCommandAndRun(std::string command, int argumentsAmount, char *argument
             std::cout << "Unexpected or missing argument";
             exit(0);
         }else{
-            if( !isIntNumber((std::string)arguments[3]) || std::stoi(std::string(arguments[3])) >= photo.GetChannelAmount() ){
+            if( !isIntNumber(static_cast<std::string>(arguments[3])) 
+                    || std::stoi(static_cast<std::string>(arguments[3])) >= photo.GetChannelAmount() ){
                 std::cout << "Wrong argument value type";
                 exit(0);
             }else{
-                DisplayHistogram(photo.GetChannel( std::stoi(std::string(arguments[3])) ).GetHistogram());
+                DisplayHistogram(photo.GetChannel( std::stoi(static_cast<std::string>(arguments[3])) ).GetHistogram());
+                exit(0);
             }
         }
     }else if(command == "--hpower"){
@@ -55,14 +57,14 @@ void ParseCommandAndRun(std::string command, int argumentsAmount, char *argument
             std::cout << "Unexpected or missing argument";
             exit(0);
         }else{
-            if( !isIntNumber((std::string)arguments[3]) || !isIntNumber((std::string)arguments[4]) 
-                    || std::stoi(std::string(arguments[3])) < 0 || std::stoi(std::string(arguments[3])) > 255
-                    || std::stoi(std::string(arguments[4])) < 0 || std::stoi(std::string(arguments[4])) > 255){
+            if( !isIntNumber(static_cast<std::string>(arguments[3])) || !isIntNumber(static_cast<std::string>(arguments[4])) 
+                    || std::stoi(static_cast<std::string>(arguments[3])) < 0 || std::stoi(static_cast<std::string>(arguments[3])) > 255
+                    || std::stoi(static_cast<std::string>(arguments[4])) < 0 || std::stoi(static_cast<std::string>(arguments[4])) > 255){
                 std::cout << "Wrong argument value type";
                 exit(0);
             }else{
                 for(int channelIndex = 0; channelIndex < photo.GetChannelAmount(); channelIndex++)
-                    PowerProbabilityDensity(photo.GetChannel(channelIndex), std::stoi(std::string(arguments[3])), std::stoi(std::string(arguments[4])) );
+                    ApplyPowerProbabilityDensity(photo.GetChannel(channelIndex), std::stoi(static_cast<std::string>(arguments[3])), std::stoi(static_cast<std::string>(arguments[4])) );
             }
         }
     }else if(command == "--centropy"){
@@ -72,6 +74,7 @@ void ParseCommandAndRun(std::string command, int argumentsAmount, char *argument
         }else{
             for(int channelIndex = 0; channelIndex < photo.GetChannelAmount(); channelIndex++)
                 std::cout << GetChannelEntropy(photo.GetChannel(channelIndex)) << std::endl;
+            exit(0);
         }
     }else if(command == "--okirsf"){
         if(argumentsAmount != 3){
@@ -79,7 +82,23 @@ void ParseCommandAndRun(std::string command, int argumentsAmount, char *argument
             exit(0);
         }else{
             for(int channelIndex = 0; channelIndex < photo.GetChannelAmount(); channelIndex++)
-                KirschOperator(photo.GetChannel(channelIndex));
+                ApplyKirschOperator(photo.GetChannel(channelIndex));
+        }
+    }else if(command == "--sexdeti"){
+        if(argumentsAmount != 4){
+            std::cout << "Unexpected or missing argument";
+            exit(0);
+        }else{
+            if( static_cast<std::string>(arguments[3]) != "N" 
+                    && static_cast<std::string>(arguments[3]) != "NE"
+                    && static_cast<std::string>(arguments[3]) != "E"
+                    && static_cast<std::string>(arguments[3]) != "SE"){
+                std::cout << "Wrong argument value type, available values: N, NE, E, SE";
+                exit(0);
+            }else{
+                for(int channelIndex = 0; channelIndex < photo.GetChannelAmount(); channelIndex++)
+                    ApplyConvolution(photo.GetChannel(channelIndex), static_cast<std::string>(arguments[3]));
+            }
         }
     }else{
         std::cout << "Illigal command: " << command;

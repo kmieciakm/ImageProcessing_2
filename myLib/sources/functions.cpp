@@ -3,7 +3,7 @@
 #include <math.h>
 #include <algorithm>
 
-void PowerProbabilityDensity(Channel &channel, int gMin, int gMax){
+void ApplyPowerProbabilityDensity(Channel &channel, int gMin, int gMax){
     std::vector<float> histogram = channel.GetHistogram();
     float gMinPow = powf(static_cast<float>(gMin),(1./3.));
     float gMaxPow = powf(static_cast<float>(gMax),(1./3.));
@@ -35,7 +35,7 @@ float GetChannelEntropy(Channel &channel){
     return (-1 * entropyValue);
 }
 
-void KirschOperator(Channel &channel){
+void ApplyKirschOperator(Channel &channel){
     Channel channelCopy = channel;
     for(int x = 1; x < channel.GetWidth()-1; x++){
         for(int y = 1; y < channel.GetHeight()-1; y++){   
@@ -79,3 +79,46 @@ int ComputeT(int i, int x, int y, Channel &channel){
 
     return ( neighborhoodA[(i+3)%8] + neighborhoodA[(i+4)%8] + neighborhoodA[(i+5)%8] + neighborhoodA[(i+6)%8] + neighborhoodA[(i+7)%8] );
 };
+
+void ApplyConvolution(Channel &channel, std::string version){
+    Channel channelCopy = channel;
+    for(int x = 1; x < channel.GetWidth()-1; x++){
+        for(int y = 1; y < channel.GetHeight()-1; y++){
+            int newPixelValue = ComputeExtractionDetail(version,x,y,channelCopy);   
+            channel.SetValue(x,y,newPixelValue);
+        }
+    }
+}
+
+int ComputeExtractionDetail(std::string version, int x, int y, Channel &channel){
+    std::vector<int> mask;
+    int sum = 0;
+    if(version == "N"){
+        mask.insert(mask.end(),{ 1, 1, 1,
+                                 1,-2, 1,
+                                -1,-1,-1});
+    } else if(version == "NE"){
+        mask.insert(mask.end(),{ 1, 1, 1,
+                                -1,-2, 1,
+                                -1,-1, 1});
+    } else if(version == "E"){
+        mask.insert(mask.end(),{ -1, 1, 1,
+                                 -1,-2, 1,
+                                 -1, 1, 1});
+    } else if(version == "SE"){
+        mask.insert(mask.end(),{-1,-1, 1,
+                                -1,-2, 1,
+                                 1, 1, 1});
+    } else{
+        mask.insert(mask.end(),{ 0, 0, 0,
+                                 0, 1, 0,
+                                 0, 0, 0});
+    }
+    int currentPixel = 0;
+    for(int i = -1; i <= 1; i++){
+        for(int j = -1; j <= 1; j++, currentPixel++){
+            sum += channel.GetValue(x+j, y+i) * mask[currentPixel];
+        }
+    }
+    return sum;
+}

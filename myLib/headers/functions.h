@@ -3,10 +3,12 @@
 
 #include "./proc.h"
 
-void PowerProbabilityDensity(Channel &,int,int);
+void ApplyPowerProbabilityDensity(Channel &,int,int);
 float GetChannelEntropy(Channel &);
-void KirschOperator(Channel &);
+void ApplyKirschOperator(Channel &);
 int ComputeS(int,int,int,Channel&);
 int ComputeT(int,int,int,Channel&);
+void ApplyConvolution(Channel&,std::string);
+int ComputeExtractionDetail(std::string,int,int,Channel&);
 
 #endif
